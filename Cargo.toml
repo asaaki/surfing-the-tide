@@ -1,0 +1,22 @@
+[package]
+name = "surfing-the-tide"
+version = "0.1.0"
+authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "1.8", features = ["attributes"] }
+http-types = "2.9"
+kv-log-macro = "1.0"
+opentelemetry = { version = "0.11", features = ["async-std"] }
+opentelemetry-jaeger = { version = "0.10", features = ["async-std"] }
+opentelemetry-semantic-conventions = "0.3"
+# opentelemetry-surf = "0.1"
+# or latest development changes:
+opentelemetry-surf = { git = "https://github.com/asaaki/opentelemetry-surf", branch = "main" }
+opentelemetry-tide = "0.6"
+surf = "2.1"
+tide = "0.15"
+url = "2.2"
