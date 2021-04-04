@@ -8,13 +8,14 @@ edition = "2018"
 
 [[bin]]
 name = "front-server"
-path = "src/main.rs"
+path = "src/front-server.rs"
 
 [[bin]]
 name = "server"
 path = "src/server.rs"
 
 [dependencies]
+anyhow = "1.0"
 async-std = { version = "1.9", features = ["attributes"] }
 http-client = "6.3"
 http-types = "2.10"
@@ -23,8 +24,17 @@ kv-log-macro = "1.0"
 opentelemetry = { version = "0.13", features = ["async-std", "rt-async-std"] }
 opentelemetry-jaeger = { version = "0.12", features = ["async-std"] }
 opentelemetry-semantic-conventions = "0.5"
-opentelemetry-surf = { git = "https://github.com/asaaki/opentelemetry-surf", branch = "main", features = ["isahc-metrics"] }
-opentelemetry-tide = { git = "https://github.com/asaaki/opentelemetry-tide", branch = "main" }
+opentelemetry-surf = { version = "0.2", features = ["isahc-metrics"] }
+opentelemetry-tide = { version = "0.7" }
+rand = "0.8"
 surf = { version = "2.2", features = ["curl-client"] }
 tide = "0.16"
+tide-compress = "0.9"
+# tide-delay = "0.0.1"
+# tide-fluent-routes = "0.1"
 url = "2.2"
+yyid = "0.6"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nix = "0.20"
+privdrop = "0.5"

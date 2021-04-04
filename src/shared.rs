@@ -1,39 +1,45 @@
 #![doc(hidden)]
 
-use opentelemetry::sdk::{
-    propagation::{BaggagePropagator, TextMapCompositePropagator, TraceContextPropagator},
-    trace::{self, Config, Tracer},
-};
+use opentelemetry::sdk::trace::{self, Config, Tracer};
 use opentelemetry::{global, trace::TraceError, KeyValue};
 use opentelemetry_jaeger::Propagator as JaegerPropagator;
 use opentelemetry_semantic_conventions::resource;
+use std::{env::var, net::SocketAddr};
 
 include!(concat!(env!("OUT_DIR"), "/build_vars.rs"));
 
-pub fn init_global_propagator() {
-    global::set_text_map_propagator(composite_propagator());
-    // OR you could use a single propagator only:
-    // global::set_text_map_propagator(TraceContextPropagator::new());
+#[cfg(target_os = "linux")]
+#[inline]
+pub fn privdrop() {
+    if nix::unistd::Uid::effective().is_root() {
+        privdrop::PrivDrop::default()
+            .chroot("/var/empty")
+            .user("nobody")
+            .apply()
+            .unwrap_or_else(|e| panic!("Failed to drop privileges: {}", e));
+    }
 }
 
-fn composite_propagator() -> TextMapCompositePropagator {
-    // W3C spec: https://w3c.github.io/baggage/ - very flexible KV format, can carry more than just trace context data
-    let baggage_propagator = BaggagePropagator::new();
+#[cfg(not(target_os = "linux"))]
+#[inline]
+pub fn privdrop() {
+    /* noop */
+}
 
-    // Uber's original format - probably only useful in a closed jaeger only setup
-    let jaeger_propagator = JaegerPropagator::new(); // aka Uber headers
+pub fn addr() -> SocketAddr {
+    format!("{}:{}", host_ip(), port())
+        .parse()
+        .expect("HOST_IP:PORT does not form a valid address")
+}
+fn host_ip() -> String {
+    var("HOST_IP").unwrap_or_else(|_| super::DEFAULT_IP.into())
+}
+fn port() -> String {
+    var("PORT").unwrap_or_else(|_| super::DEFAULT_PORT.into())
+}
 
-    // Yet another W3C spec: https://www.w3.org/TR/trace-context/ - only for trace context info
-    let trace_context_propagator = TraceContextPropagator::new();
-
-    // NB! last wins (and overwrites!); so re-order based on your actual usage or preferences
-    // or leave out propagators you definitely do no use;
-    // of course, if you send all headers with identical values the order doesn't matter.
-    TextMapCompositePropagator::new(vec![
-        Box::new(jaeger_propagator),
-        Box::new(baggage_propagator),
-        Box::new(trace_context_propagator),
-    ])
+pub fn init_global_propagator() {
+    global::set_text_map_propagator(JaegerPropagator::new());
 }
 
 #[allow(dead_code)]
@@ -48,7 +54,10 @@ pub fn jaeger_tracer(
     version: &str,
     instance_id: &str,
 ) -> Result<Tracer, TraceError> {
+    // https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions
     let tags = [
+        resource::HOST_NAME
+            .string(hostname()),
         resource::SERVICE_VERSION.string(version.to_owned()),
         resource::SERVICE_INSTANCE_ID.string(instance_id.to_owned()),
         resource::PROCESS_EXECUTABLE_PATH
@@ -61,4 +70,14 @@ pub fn jaeger_tracer(
         .with_service_name(svc_name)
         .with_tags(tags.iter().map(ToOwned::to_owned))
         .install_batch(opentelemetry::runtime::AsyncStd)
+}
+
+pub fn metrics_kvs() -> Vec<KeyValue> {
+    vec![
+        KeyValue::new("hostname", hostname())
+    ]
+}
+
+fn hostname() -> String {
+    std::env::var("HOSTNAME").unwrap_or_else(|_| "NO_HOSTNAME_SET".into())
 }

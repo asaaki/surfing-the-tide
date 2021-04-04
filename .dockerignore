@@ -1,0 +1,13 @@
+.assets
+.envrc
+docker-compose
+docker-compose.yml
+Dockerfile
+.gitignore
+k6.js
+Makefile
+nginx
+README.md
+target
+jaeger-trace.png
+jaeger-search.png

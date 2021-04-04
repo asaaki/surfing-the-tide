@@ -1,0 +1,318 @@
+# https://docs.docker.com/compose/compose-file/compose-file-v3/
+version: '3.9'
+
+#! WARNING! This setup requires a lot of resources!
+
+services:
+
+  # https://github.com/opentracing-contrib/nginx-opentracing
+  nginx:
+    image: opentracing/nginx-opentracing:0.14.0
+    volumes:
+      - ./docker-compose/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker-compose/nginx/jaeger-config.json:/etc/jaeger-config.json
+      - ./static:/static
+    cpus: 4.0
+    mem_limit: 256m # though not in the v3 spec they do work
+    mem_reservation: 128m # though not in the v3 spec they do work
+    ports:
+      - '8080:8080'
+    networks:
+      - water
+    depends_on:
+      - jaeger
+      - frontend01
+      - frontend02
+      - frontend03
+      - frontendbackup01
+      - frontendbackup02
+
+  frontend01: &frontend
+    image: surfing-the-tide/apps:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        STRIP: '1'
+    # init: true # our images come already with tini preinstalled
+    command: ['/app/front-server']
+    environment: &frontend_env
+      HOST_IP: '0.0.0.0'
+      PORT: '4000'
+      UPSTREAM_URL: http://backend01:3000
+      UPSTREAM_URLS: http://backend01:3000,http://backend02:3000,http://backend03:3000
+      OTEL_EXPORTER_JAEGER_AGENT_HOST: 'jaeger'
+      OTEL_EXPORTER_JAEGER_AGENT_PORT: '6831'
+      OTEL_BSP_SCHEDULE_DELAY: '100'
+      OTEL_BSP_MAX_QUEUE_SIZE: '134217728'
+      OTEL_BSP_MAX_EXPORT_BATCH_SIZE: '64'
+    cpus: 1.0
+    mem_limit: 50m
+    mem_reservation: 25m
+    expose:
+      - '4000'
+    networks:
+      - water
+    depends_on:
+      - jaeger
+      - backend01
+      - backend02
+      - backend03
+      - backend04
+
+  frontend02:
+    <<: *frontend
+    environment:
+      <<: *frontend_env
+      UPSTREAM_URL: http://backend02:3000
+
+  frontend03:
+    <<: *frontend
+    environment:
+      <<: *frontend_env
+      UPSTREAM_URL: http://backend03:3000
+
+  # just for nginx upstream config testing
+  frontendbackup01:
+    <<: *frontend
+    environment:
+      <<: *frontend_env
+      UPSTREAM_URL: http://backend04:3000
+  frontendbackup02:
+    <<: *frontend
+    environment:
+      <<: *frontend_env
+      UPSTREAM_URL: http://backend04:3000
+
+  backend01: &backend
+    image: surfing-the-tide/apps:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        STRIP: '1'
+    # init: true # our images come already with tini preinstalled
+    command: ["/app/server"]
+    environment:
+      HOST_IP: '0.0.0.0'
+      PORT: '3000'
+      OTEL_EXPORTER_JAEGER_AGENT_HOST: jaeger
+      OTEL_EXPORTER_JAEGER_AGENT_PORT: '6831'
+      OTEL_BSP_SCHEDULE_DELAY: '100'
+      OTEL_BSP_MAX_QUEUE_SIZE: '134217728'
+      OTEL_BSP_MAX_EXPORT_BATCH_SIZE: '64'
+    cpus: 1.0 # doesn't need to be beefy, work is very light
+    mem_limit: 50m
+    mem_reservation: 25m
+    expose:
+      - '3000'
+    networks:
+      - water
+    depends_on:
+      - jaeger
+
+  backend02: *backend
+  backend03: *backend
+  # only used for the frontend backup services
+  backend04: *backend
+
+  jaeger: # jaeger-agent
+    scale: 10 # provde enough agent capacity for high load
+    image: jaegertracing/jaeger-agent:1.22.0
+    command: [
+      '--reporter.grpc.host-port=jaeger-collector:14250',
+      '--reporter.grpc.retry.max=1000'
+    ]
+    cpus: 1.0
+    mem_limit: 128m
+    mem_reservation: 32m
+    expose:
+      - '5775/udp'
+      - '6831/udp'
+      - '6832/udp'
+      - '5778'
+    restart: on-failure
+    depends_on:
+      - jaeger-collector
+    networks:
+      - water
+      - beach
+
+  jaeger-collector:
+    scale: 5
+    image: jaegertracing/jaeger-collector:1.22.0
+    command: [
+      '--es.num-shards=1',
+      '--es.num-replicas=0',
+      '--es.server-urls=http://es01:9200,http://es02:9200,http://es03:9200',
+      '--collector.zipkin.host-port=9411',
+      '--collector.queue-size=100000',
+      '--collector.num-workers=1000'
+    ]
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+    cpus: 1.0
+    mem_limit: 256m
+    mem_reservation: 128m
+    expose:
+      - '14269'
+      - '14268'
+      - '14250'
+      - '9411'
+    restart: on-failure
+    depends_on:
+      - es01
+      - es02
+      - es03
+    networks:
+      - beach
+
+  jaeger-query:
+    image: jaegertracing/jaeger-query:1.22.0
+    command: [
+      '--es.server-urls=http://es01:9200,http://es02:9200,http://es03:9200'
+    ]
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+    ports:
+      - '16686:16686'
+      - '16687'
+    restart: on-failure
+    depends_on:
+      - es01
+      - es02
+      - es03
+    networks:
+      - beach
+
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms2G -Xmx2G'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data_01:/usr/share/elasticsearch/data
+    expose:
+      - '9200'
+    networks:
+      - village
+      - beach
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms2G -Xmx2G'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data_02:/usr/share/elasticsearch/data
+    expose:
+      - '9200'
+    networks:
+      - village
+      - beach
+    depends_on:
+      - es01
+
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms2G -Xmx2G'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data_03:/usr/share/elasticsearch/data
+    expose:
+      - '9200'
+    networks:
+      - village
+      - beach
+    depends_on:
+      - es01
+      - es02
+
+  prometheus:
+    image: prom/prometheus:v2.26.0
+    command: [
+      '--web.enable-lifecycle',
+      '--config.file=/etc/prometheus/prometheus.yml'
+    ]
+    ports:
+      - 9000:9090
+    volumes:
+      - ./docker-compose/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    networks:
+      - water
+      - beach
+
+  nginx-prom:
+    image: nginx/nginx-prometheus-exporter:0.9.0
+    command: [
+      '-nginx.scrape-uri=http://nginx:8080/stub_status'
+    ]
+    expose:
+      - '9113'
+    networks:
+      - water
+    depends_on:
+      - nginx
+
+  grafana:
+    image: grafana/grafana:7.5.2
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker-compose/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./docker-compose/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker-compose/grafana/provisioning/dashboards/home.json:/usr/share/grafana/public/dashboards/home.json
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    ports:
+      - '3333:3000'
+    networks:
+      - beach
+
+volumes:
+  es_data_01:
+    driver: local
+  es_data_02:
+    driver: local
+  es_data_03:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  # our business services
+  water:
+  # otel machinery
+  beach:
+  # elasticsearch cluster
+  village:
