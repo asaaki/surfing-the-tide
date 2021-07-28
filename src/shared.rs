@@ -17,7 +17,10 @@ pub fn privdrop() {
             .chroot("/var/empty")
             .user("nobody")
             .apply()
-            .unwrap_or_else(|e| panic!("Failed to drop privileges: {}", e));
+            .unwrap_or_else(|e| {
+                #[allow(clippy::panic)]
+                panic!("Failed to drop privileges: {}", e)
+            });
     }
 }
 
