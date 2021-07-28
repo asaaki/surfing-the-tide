@@ -7,3 +7,6 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+      # this depends on the surf->http_client dependency chain
+      - dependency-name: "isahc"
