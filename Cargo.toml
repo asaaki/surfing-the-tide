@@ -18,7 +18,7 @@ path = "src/server.rs"
 [dependencies]
 anyhow = "1.0"
 async-std = { version = "1.9", features = ["attributes"] }
-http-client = "6.3"
+http-client = "6.4"
 http-types = "2.10"
 isahc = { version = "0.9", default-features = false, features = ["http2"] }
 kv-log-macro = "1.0"
