@@ -1,5 +1,4 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
 
 export let options = {
   stages: [
@@ -31,12 +30,11 @@ export let options = {
   discardResponseBodies: true,
 
   // summaryTimeUnit: 'ms',
-  summaryTrendStats: ['min', 'med', 'max', 'p(95)', 'p(99)', 'p(99.9)', 'count'],
+  summaryTrendStats: ['p(99)', 'p(99.9)', 'p(99.99)', 'p(99.999)', 'max', 'count'],
 
   noUsageReport: true,
 };
 
 export default function () {
   http.get('http://localhost:8080/');
-  // sleep(0.050);
 }

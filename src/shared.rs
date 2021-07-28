@@ -4,6 +4,7 @@ use opentelemetry::sdk::trace::{self, Config, Tracer};
 use opentelemetry::{global, trace::TraceError, KeyValue};
 use opentelemetry_jaeger::Propagator as JaegerPropagator;
 use opentelemetry_semantic_conventions::resource;
+use opentelemetry_tide::MetricsConfig;
 use std::{env::var, net::SocketAddr};
 
 include!(concat!(env!("OUT_DIR"), "/build_vars.rs"));
@@ -56,12 +57,15 @@ pub fn jaeger_tracer(
 ) -> Result<Tracer, TraceError> {
     // https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions
     let tags = [
-        resource::HOST_NAME
-            .string(hostname()),
+        resource::HOST_NAME.string(hostname()),
         resource::SERVICE_VERSION.string(version.to_owned()),
         resource::SERVICE_INSTANCE_ID.string(instance_id.to_owned()),
-        resource::PROCESS_EXECUTABLE_PATH
-            .string(std::env::current_exe().unwrap().display().to_string()),
+        resource::PROCESS_EXECUTABLE_PATH.string(
+            std::env::current_exe()
+                .expect("current executable not determined")
+                .display()
+                .to_string(),
+        ),
         resource::PROCESS_PID.string(std::process::id().to_string()),
         KeyValue::new("process.executable.profile", PROFILE),
     ];
@@ -72,10 +76,15 @@ pub fn jaeger_tracer(
         .install_batch(opentelemetry::runtime::AsyncStd)
 }
 
-pub fn metrics_kvs() -> Vec<KeyValue> {
-    vec![
-        KeyValue::new("hostname", hostname())
-    ]
+pub fn metrics_config() -> MetricsConfig {
+    MetricsConfig {
+        global_labels: Some(metrics_kvs()),
+        ..MetricsConfig::default()
+    }
+}
+
+fn metrics_kvs() -> Vec<KeyValue> {
+    vec![KeyValue::new("hostname", hostname())]
 }
 
 fn hostname() -> String {

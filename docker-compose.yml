@@ -15,6 +15,7 @@ services:
     cpus: 4.0
     mem_limit: 256m # though not in the v3 spec they do work
     mem_reservation: 128m # though not in the v3 spec they do work
+    restart: unless-stopped
     ports:
       - '8080:8080'
     networks:
@@ -36,6 +37,7 @@ services:
         STRIP: '1'
     # init: true # our images come already with tini preinstalled
     command: ['/app/front-server']
+    restart: unless-stopped
     environment: &frontend_env
       HOST_IP: '0.0.0.0'
       PORT: '4000'
@@ -93,7 +95,8 @@ services:
         STRIP: '1'
     # init: true # our images come already with tini preinstalled
     command: ["/app/server"]
-    environment:
+    restart: unless-stopped
+    environment: &backend_env
       HOST_IP: '0.0.0.0'
       PORT: '3000'
       OTEL_EXPORTER_JAEGER_AGENT_HOST: jaeger
@@ -111,7 +114,11 @@ services:
     depends_on:
       - jaeger
 
-  backend02: *backend
+  backend02:
+    <<: *backend
+    environment:
+      <<: *backend_env
+      RANDOM_WAITS: '1'
   backend03: *backend
   # only used for the frontend backup services
   backend04: *backend
@@ -187,6 +194,7 @@ services:
 
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    restart: on-failure
     environment:
       - node.name=es01
       - cluster.name=es-docker-cluster
@@ -208,6 +216,7 @@ services:
 
   es02:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    restart: on-failure
     environment:
       - node.name=es02
       - cluster.name=es-docker-cluster
@@ -231,6 +240,7 @@ services:
 
   es03:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    restart: on-failure
     environment:
       - node.name=es03
       - cluster.name=es-docker-cluster
@@ -255,6 +265,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.26.0
+    restart: on-failure
     command: [
       '--web.enable-lifecycle',
       '--config.file=/etc/prometheus/prometheus.yml'
@@ -270,6 +281,7 @@ services:
 
   nginx-prom:
     image: nginx/nginx-prometheus-exporter:0.9.0
+    restart: on-failure
     command: [
       '-nginx.scrape-uri=http://nginx:8080/stub_status'
     ]
@@ -291,6 +303,13 @@ services:
       - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_DISABLE_SIGNOUT_MENU=true
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,farski-blendstat-panel,digrich-bubblechart-panel,petrslavotinek-carpetplot-panel
+      - GF_ANALYTICS_REPORTING_ENABLED=false
     restart: unless-stopped
     ports:
       - '3333:3000'

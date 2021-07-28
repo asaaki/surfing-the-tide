@@ -21,6 +21,8 @@ start: dc.up
 
 stop: dc.down
 
+restart: stop start
+
 dc.build:
 	docker-compose build --force-rm --build-arg DU_BUST=$(shell date +%s.%N)
 
@@ -30,7 +32,7 @@ dc.up:
 	@echo "Call http://localhost:4000/ for front-server"
 
 dc.down:
-	docker-compose down --remove-orphans
+	docker-compose down --remove-orphans --volumes
 
 dc.logs:
 	docker-compose logs
