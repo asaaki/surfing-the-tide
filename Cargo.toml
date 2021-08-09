@@ -22,7 +22,7 @@ http-client = "6.3"
 http-types = "2.10"
 isahc = { version = "0.9", default-features = false, features = ["http2"] }
 kv-log-macro = "1.0"
-opentelemetry = { version = "0.15", features = ["async-std", "rt-async-std"] }
+opentelemetry = { version = "0.16", features = ["async-std", "rt-async-std"] }
 opentelemetry-jaeger = { version = "0.14", features = ["async-std"] }
 opentelemetry-semantic-conventions = "0.7"
 opentelemetry-surf = { version = "0.4", features = ["isahc-metrics"] }
