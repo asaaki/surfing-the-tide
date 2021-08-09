@@ -1450,6 +1450,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf9b1c4e9a6c4de793c632496fa490bdc0e1eea73f0c91394f7b6990935d22"
+dependencies = [
+ "futures",
+ "js-sys",
+ "lazy_static",
+ "thiserror",
+]
+
+[[package]]
 name = "opentelemetry-jaeger"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1458,7 +1470,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "lazy_static",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "thiserror",
  "thrift",
 ]
@@ -1469,7 +1481,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e06ddda4790151e8b494f9bb32720fce23722d7f395f81383b9b2934bb6356a0"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "prometheus",
  "protobuf",
 ]
@@ -1480,7 +1492,16 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "748502c9b5621d7f0fe9cf26cb75bc773a04ce8f1c2b9ce44c3e01045aac6b6d"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.15.0",
+]
+
+[[package]]
+name = "opentelemetry-semantic-conventions"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffeac823339e8b0f27b961f4385057bf9f97f2863bc745bd015fd6091f2270e9"
+dependencies = [
+ "opentelemetry 0.16.0",
 ]
 
 [[package]]
@@ -1492,8 +1513,8 @@ dependencies = [
  "http-types",
  "isahc",
  "kv-log-macro",
- "opentelemetry",
- "opentelemetry-semantic-conventions",
+ "opentelemetry 0.15.0",
+ "opentelemetry-semantic-conventions 0.7.0",
  "surf",
  "url",
 ]
@@ -1506,9 +1527,9 @@ checksum = "64839b9519b59cdd637e7ded821995bcebd5797c2ca0d807899373aafe4e41b4"
 dependencies = [
  "http-types",
  "kv-log-macro",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "opentelemetry-prometheus",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.7.0",
  "prometheus",
  "tide",
  "url",
@@ -2122,9 +2143,9 @@ dependencies = [
  "isahc",
  "kv-log-macro",
  "nix 0.22.0",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "opentelemetry-jaeger",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.8.0",
  "opentelemetry-surf",
  "opentelemetry-tide",
  "privdrop",
