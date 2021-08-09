@@ -1435,11 +1435,28 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff27b33e30432e7b9854936693ca103d8591b0501f7ae9f633de48cda3bf2a67"
 dependencies = [
- "async-std",
  "async-trait",
  "crossbeam-channel",
  "dashmap",
  "fnv",
+ "futures",
+ "js-sys",
+ "lazy_static",
+ "percent-encoding",
+ "pin-project",
+ "rand 0.8.4",
+ "thiserror",
+]
+
+[[package]]
+name = "opentelemetry"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1cf9b1c4e9a6c4de793c632496fa490bdc0e1eea73f0c91394f7b6990935d22"
+dependencies = [
+ "async-std",
+ "async-trait",
+ "crossbeam-channel",
  "futures",
  "js-sys",
  "lazy_static",
@@ -1458,7 +1475,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "lazy_static",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "thiserror",
  "thrift",
 ]
@@ -1469,7 +1486,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e06ddda4790151e8b494f9bb32720fce23722d7f395f81383b9b2934bb6356a0"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "prometheus",
  "protobuf",
 ]
@@ -1480,7 +1497,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "748502c9b5621d7f0fe9cf26cb75bc773a04ce8f1c2b9ce44c3e01045aac6b6d"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.15.0",
 ]
 
 [[package]]
@@ -1492,7 +1509,7 @@ dependencies = [
  "http-types",
  "isahc",
  "kv-log-macro",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "opentelemetry-semantic-conventions",
  "surf",
  "url",
@@ -1506,7 +1523,7 @@ checksum = "64839b9519b59cdd637e7ded821995bcebd5797c2ca0d807899373aafe4e41b4"
 dependencies = [
  "http-types",
  "kv-log-macro",
- "opentelemetry",
+ "opentelemetry 0.15.0",
  "opentelemetry-prometheus",
  "opentelemetry-semantic-conventions",
  "prometheus",
@@ -2122,7 +2139,7 @@ dependencies = [
  "isahc",
  "kv-log-macro",
  "nix 0.22.0",
- "opentelemetry",
+ "opentelemetry 0.16.0",
  "opentelemetry-jaeger",
  "opentelemetry-semantic-conventions",
  "opentelemetry-surf",
