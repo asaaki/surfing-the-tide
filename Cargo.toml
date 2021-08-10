@@ -19,7 +19,7 @@ path = "src/server.rs"
 anyhow = "1.0"
 async-std = { version = "1.9", features = ["attributes"] }
 http-client = "6.3"
-http-types = "2.10"
+http-types = "2.12"
 isahc = { version = "0.9", default-features = false, features = ["http2"] }
 kv-log-macro = "1.0"
 opentelemetry = { version = "0.15", features = ["async-std", "rt-async-std"] }
