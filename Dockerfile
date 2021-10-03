@@ -14,7 +14,7 @@ ARG RUST_BACKTRACE=0
 # ARG BUILD_BASE_IMAGE=ghcr.io/asaaki/rust-musl-cross:x86_64-musl
 # ARG BUILD_BASE_IMAGE=ekidd/rust-musl-builder:latest
 ARG BUILD_BASE_IMAGE=ghcr.io/asaaki/rust-musl-builder:latest
-ARG RUN_BASE_IMAGE=alpine:3.13
+ARG RUN_BASE_IMAGE=alpine:3.14
 
 #########################
 ##### builder layer #####
@@ -24,7 +24,7 @@ FROM ${BUILD_BASE_IMAGE} AS builder
 # base image might have changed it, so let's enforce root to be able to do system changes
 USER root
 
-ENV BUILD_CACHE_BUSTER="2021-03-31T00:00:00"
+ENV BUILD_CACHE_BUSTER="2021-10-03T00:00:00"
 ENV DEB_PACKAGES="ca-certificates curl file git make patch wget xz-utils"
 
 # @see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md#example-cache-apt-packages
@@ -97,9 +97,10 @@ CMD ["/bin/sh"]
 # otherwise the user within the container would be still root
 
 FROM base as run
-RUN addgroup -g 1001 appuser && \
-    adduser  -u 1001 -G appuser -H -D appuser
-USER 1001
+ARG USER_ID=1001
+RUN addgroup -g ${USER_ID} appuser && \
+    adduser  -u ${USER_ID} -G appuser -H -D appuser
+USER ${USER_ID}
 
 #######################
 ##### final image #####

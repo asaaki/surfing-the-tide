@@ -30,6 +30,7 @@ dc.up:
 	docker-compose up -d --remove-orphans
 	@echo "Open http://localhost:16686/ for jaeger"
 	@echo "Call http://localhost:4000/ for front-server"
+	@echo "Call http://localhost:8080/ for nginx"
 
 dc.down:
 	docker-compose down --remove-orphans --volumes

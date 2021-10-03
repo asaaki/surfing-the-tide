@@ -11,6 +11,7 @@ include!(concat!(env!("OUT_DIR"), "/build_vars.rs"));
 
 #[cfg(target_os = "linux")]
 #[inline]
+#[allow(clippy::panic)]
 pub fn privdrop() {
     if nix::unistd::Uid::effective().is_root() {
         privdrop::PrivDrop::default()
@@ -18,8 +19,7 @@ pub fn privdrop() {
             .user("nobody")
             .apply()
             .unwrap_or_else(|e| {
-                #[allow(clippy::panic)]
-                panic!("Failed to drop privileges: {}", e)
+                panic!("Failed to drop privileges: {}", e);
             });
     }
 }

@@ -16,28 +16,27 @@ name = "server"
 path = "src/server.rs"
 
 [dependencies]
-anyhow = "1.0"
-async-std = { version = "1.9", features = ["attributes"] }
-http-client = "6.3"
-http-types = "2.10"
-isahc = { version = "0.9", default-features = false, features = ["http2"] }
-kv-log-macro = "1.0"
-opentelemetry = { version = "0.15", features = ["async-std", "rt-async-std"] }
-opentelemetry-jaeger = { version = "0.14", features = ["async-std"] }
-opentelemetry-semantic-conventions = "0.7"
-opentelemetry-surf = { version = "0.4", features = ["isahc-metrics"] }
-# opentelemetry-surf = { git = "https://github.com/asaaki/opentelemetry-surf", rev = "a40c561", features = ["isahc-metrics"] }
-opentelemetry-tide = { version = "0.10" }
-# opentelemetry-tide = { git = "https://github.com/asaaki/opentelemetry-tide", rev = "bb2b01f" }
-rand = "0.8"
-surf = { version = "2.2", features = ["curl-client"] }
-tide = "0.16"
-tide-compress = "0.9"
+opentelemetry-surf = { version = "0.5", features = ["isahc-metrics"] }
+opentelemetry-tide = { version = "0.11" }
+
+anyhow = "1.0.44"
+async-std = { version = "1.10.0", features = ["attributes"] }
+http-client = "6.5.1"
+http-types = "2.12.0"
+isahc = { version = "0.9.14", default-features = false, features = ["http2"] }
+kv-log-macro = "1.0.7"
+opentelemetry = { version = "0.16.0", features = ["rt-async-std"] }
+opentelemetry-jaeger = { version = "0.15.0", features = ["rt-async-std"] }
+opentelemetry-semantic-conventions = "0.8.0"
+rand = "0.8.4"
+surf = { version = "2.3.1", features = ["curl-client"] }
+tide = "0.16.0"
+tide-compress = "0.9.0"
 # tide-delay = "0.0.1"
 # tide-fluent-routes = "0.1"
-url = "2.2"
-yyid = "0.6"
+url = "2.2.2"
+yyid = "0.6.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-nix = "0.22"
-privdrop = "0.5"
+nix = "0.23.0"
+privdrop = "0.5.0"
