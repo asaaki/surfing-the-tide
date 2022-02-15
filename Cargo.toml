@@ -17,7 +17,7 @@ path = "src/server.rs"
 
 [dependencies]
 opentelemetry-surf = { version = "0.5", features = ["isahc-metrics"] }
-opentelemetry-tide = { version = "0.11" }
+opentelemetry-tide = { version = "0.12" }
 
 anyhow = "1.0.53"
 async-std = { version = "1.10.0", features = ["attributes"] }
