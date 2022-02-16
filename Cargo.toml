@@ -16,7 +16,7 @@ name = "server"
 path = "src/server.rs"
 
 [dependencies]
-opentelemetry-surf = { version = "0.5", features = ["isahc-metrics"] }
+opentelemetry-surf = { version = "0.6", features = ["isahc-metrics"] }
 opentelemetry-tide = { version = "0.11" }
 
 anyhow = "1.0.53"
