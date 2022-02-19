@@ -14,7 +14,7 @@ ARG RUST_BACKTRACE=0
 # ARG BUILD_BASE_IMAGE=ghcr.io/asaaki/rust-musl-cross:x86_64-musl
 # ARG BUILD_BASE_IMAGE=ekidd/rust-musl-builder:latest
 ARG BUILD_BASE_IMAGE=ghcr.io/asaaki/rust-musl-builder:latest
-ARG RUN_BASE_IMAGE=alpine:3.14
+ARG RUN_BASE_IMAGE=alpine:3.15
 
 #########################
 ##### builder layer #####
@@ -53,7 +53,7 @@ FROM builder as build
 WORKDIR /app
 # ENV RUSTFLAGS="-C target-feature=-crt-static"
 
-# !!! (UN)COMMENT what you (don't) need
+# (UN)COMMENT what you (don't) need
 COPY Cargo.* build.rs /app/
 COPY src /app/src
 
@@ -80,13 +80,16 @@ RUN du -h bin/*
 ######################
 
 FROM ${RUN_BASE_IMAGE} as base
+
 # Why I still add an init process executable:
 # @see https://stackoverflow.com/a/51172104/653173
 RUN apk update --no-cache && \
     apk upgrade --no-cache && \
     apk add --no-cache tini
-WORKDIR /app
 ENTRYPOINT ["/sbin/tini", "--"]
+ENV TINI_SUBREAPER=1
+
+WORKDIR /app
 CMD ["/bin/sh"]
 
 ####################
@@ -107,6 +110,9 @@ USER ${USER_ID}
 #######################
 
 FROM run as production
+
+ARG RUST_BACKTRACE
+ENV RUST_BACKTRACE=${RUST_BACKTRACE}
 
 COPY --from=build --chown=appuser:appuser /app/bin/* /app
 COPY static /app/static

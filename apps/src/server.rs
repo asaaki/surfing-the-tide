@@ -31,10 +31,13 @@ static DEFAULT_IP: &str = "127.0.0.1";
 async fn main() -> MainResult {
     shared::privdrop();
     tide::log::with_level(tide::log::LevelFilter::Warn);
+    tide::log::debug!("Server starting ...");
     shared::init_global_propagator();
-    let tracer = shared::jaeger_tracer(SVC_NAME, VERSION, "backend-123")?;
+    let _tracer = shared::jaeger_tracer(SVC_NAME, VERSION, &shared::hostname())?;
+    tide::log::debug!("(tracer set up)");
     let mut app = tide::with_state(random_waits());
-    app.with_middlewares(tracer, shared::metrics_config());
+    app.with_metrics_middleware(shared::metrics_config());
+    app.with_default_tracing_middleware();
     app.with(After(|res: Response| async move {
         // dbg!(&res);
         Ok(res)
@@ -49,10 +52,12 @@ async fn main() -> MainResult {
 
     app.at("/").get(handler);
 
-    eprintln!("Server started at {}", shared::addr());
+    tide::log::debug!("Server started at {}", shared::addr());
     app.listen(shared::addr()).await?;
+    tide::log::debug!("Server stopping ...");
     opentelemetry::global::force_flush_tracer_provider();
     opentelemetry::global::shutdown_tracer_provider();
+    tide::log::debug!("Server stopped.");
     Ok(())
 }
 
@@ -72,7 +77,7 @@ async fn handler(req: Request<bool>) -> TideResult {
 
 fn random_duration(random_waits: bool) -> Duration {
     if !random_waits {
-        return Duration::from_secs(0);
+        return Duration::new(0, 0);
     };
 
     let mut rng = rand::thread_rng();

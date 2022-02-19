@@ -1,7 +1,14 @@
 #![doc(hidden)]
 
-use opentelemetry::sdk::trace::{self, Config, Tracer};
-use opentelemetry::{global, trace::TraceError, KeyValue};
+use opentelemetry::{
+    global,
+    sdk::{
+        trace::{self, Config, Tracer},
+        Resource,
+    },
+    trace::TraceError,
+    KeyValue,
+};
 use opentelemetry_jaeger::Propagator as JaegerPropagator;
 use opentelemetry_semantic_conventions::resource;
 use opentelemetry_tide::MetricsConfig;
@@ -47,18 +54,7 @@ pub fn init_global_propagator() {
 }
 
 #[allow(dead_code)]
-pub fn trace_config() -> Config {
-    trace::config()
-    // can accept more options like:
-    // .with_sampler(Sampler::TraceIdRatioBased(0.2))
-}
-
-pub fn jaeger_tracer(
-    svc_name: &str,
-    version: &str,
-    instance_id: &str,
-) -> Result<Tracer, TraceError> {
-    // https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions
+pub fn trace_config(version: &str, instance_id: &str) -> Config {
     let tags = [
         resource::HOST_NAME.string(hostname()),
         resource::SERVICE_VERSION.string(version.to_owned()),
@@ -73,9 +69,19 @@ pub fn jaeger_tracer(
         KeyValue::new("process.executable.profile", PROFILE),
     ];
 
+    trace::config().with_resource(Resource::new(tags))
+}
+
+pub fn jaeger_tracer(
+    svc_name: &str,
+    version: &str,
+    instance_id: &str,
+) -> Result<Tracer, TraceError> {
+    // https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions
+
     opentelemetry_jaeger::new_pipeline()
         .with_service_name(svc_name)
-        .with_tags(tags.iter().map(ToOwned::to_owned))
+        .with_trace_config(trace_config(version, instance_id))
         .install_batch(opentelemetry::runtime::AsyncStd)
 }
 
@@ -90,6 +96,6 @@ fn metrics_kvs() -> Vec<KeyValue> {
     vec![KeyValue::new("hostname", hostname())]
 }
 
-fn hostname() -> String {
+pub fn hostname() -> String {
     std::env::var("HOSTNAME").unwrap_or_else(|_| "NO_HOSTNAME_SET".into())
 }

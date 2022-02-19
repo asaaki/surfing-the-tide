@@ -57,15 +57,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     privdrop();
     tide::log::with_level(tide::log::LevelFilter::Warn);
     init_global_propagator();
-    let tracer = shared::jaeger_tracer(SVC_NAME, VERSION, "surf-the-tide-9")?;
+    let _tracer = shared::jaeger_tracer(SVC_NAME, VERSION, &shared::hostname())?;
 
-    let otel_mw = OpenTelemetryTracingMiddleware::new(tracer.clone());
+    let otel_mw = OpenTelemetryTracingMiddleware::default();
     let client = create_client().with(otel_mw);
 
     let upstream_urls = upstream_urls();
     let state = State::new(client, upstream_urls.clone());
     let mut app = tide::with_state(state);
-    app.with_middlewares(tracer, metrics_config());
+    app.with_metrics_middleware(metrics_config());
+    app.with_default_tracing_middleware();
     app.with(tide_compress::CompressMiddleware::new());
 
     app.at("/").get(|req: Request<State>| async move {
@@ -81,12 +82,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let client = &state.client;
         let surf_request = client.get(upstream_url).build();
 
-        span.add_event("upstream.request.started".into(), vec![]);
+        span.add_event("upstream.request.started", vec![]);
         let mut upstream_res = client.send(surf_request).with_context(cx.clone()).await?;
         let upstream_body = upstream_res.take_body().into_string().await?;
         let body = format!("upstream responded with: \n{}", upstream_body);
         span.add_event(
-            "upstream.request.finished".into(),
+            "upstream.request.finished",
             vec![KeyValue::new(
                 "upstream.body.length",
                 upstream_body.len().to_string(),
@@ -103,12 +104,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &favicon_path.display()
         ))?;
 
-    eprintln!(
+    tide::log::info!(
         "Don't forget to start an upstream service(s) on {:?}.",
         upstream_urls
     );
     let addr = addr();
-    eprintln!("Server started at {}", &addr);
+    tide::log::info!("Server started at {}", &addr);
     app.listen(addr).await?;
     opentelemetry::global::force_flush_tracer_provider();
     opentelemetry::global::shutdown_tracer_provider();

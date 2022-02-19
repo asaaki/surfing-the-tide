@@ -1,0 +1,42 @@
+[package]
+name = "surfing-the-tide"
+version = "0.1.0"
+authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "front-server"
+path = "src/front-server.rs"
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[dependencies]
+opentelemetry-surf = { version = "0.6.0", features = ["isahc-metrics"] }
+opentelemetry-tide = { version = "0.12.0" }
+
+anyhow = "1.0.53"
+async-std = { version = "1.10.0", features = ["attributes"] }
+http-client = "6.5.1"
+http-types = "2.12.0"
+isahc = { version = "0.9.14", default-features = false, features = ["http2"] }
+kv-log-macro = "1.0.7"
+opentelemetry = { version = "0.17.0", features = ["rt-async-std"] }
+opentelemetry-jaeger = { version = "0.16.0", features = ["rt-async-std"] }
+opentelemetry-semantic-conventions = "0.9.0"
+rand = "0.8.5"
+surf = { version = "2.3.2", features = ["curl-client"] }
+tide = "0.16.0"
+tide-compress = "0.9.0"
+# tide-delay = "0.0.1"
+# tide-fluent-routes = "0.1"
+url = "2.2.2"
+yyid = "0.6.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nix = "0.23.1"
+privdrop = "0.5.1"
