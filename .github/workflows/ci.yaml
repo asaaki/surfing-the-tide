@@ -30,8 +30,8 @@ jobs:
     - uses: Swatinem/rust-cache@v1
 
     - run: cargo fetch
-    - run: cargo check --all --examples
-    - run: cargo test --all
+    - run: cargo check --workspace
+    - run: cargo test --workspace
 
   check_fmt_and_docs:
     name: Checking fmt, clippy, and docs
@@ -48,7 +48,7 @@ jobs:
 
     - uses: Swatinem/rust-cache@v1
 
-    - run: cargo check
-    - run: cargo clippy --tests --examples -- -D warnings
+    - run: cargo check --workspace
+    - run: cargo clippy --workspace --tests --examples -- -D warnings
     - run: cargo fmt --all -- --check
-    - run: cargo doc --no-deps
+    - run: cargo doc --workspace --no-deps
