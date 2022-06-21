@@ -21,7 +21,7 @@ opentelemetry-tide = { version = "0.12.0" }
 
 anyhow = "1.0.58"
 async-std = { version = "1.11.0", features = ["attributes"] }
-http-client = "6.5.2"
+http-client = "6.5.3"
 http-types = "2.12.0"
 isahc = { version = "0.9.14", default-features = false, features = ["http2"] }
 kv-log-macro = "1.0.7"
