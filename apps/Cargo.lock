@@ -1211,9 +1211,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.124"
+version = "0.2.131"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21a41fed9d98f27ab1c6d161da622a4fa35e8a54a8adc24bbf3ddd0ef70b0e50"
+checksum = "04c3b4822ccebfa39c02fc03d1534441b22ead323fa0f48bb7ddd8e6ba076a40"
 
 [[package]]
 name = "libnghttp2-sys"
@@ -1332,6 +1332,20 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "memoffset",
+]
+
+[[package]]
+name = "nix"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e322c04a9e3440c327fca7b6c8a63e6890a32fa2ad689db972425f07e0d22abb"
+dependencies = [
+ "autocfg",
+ "bitflags",
+ "cfg-if 1.0.0",
+ "libc",
+ "memoffset",
+ "pin-utils",
 ]
 
 [[package]]
@@ -1665,7 +1679,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad5b1f7e40f628a2f8f90e40d3f313be83066cc61997fdcb96cade6abf7cee93"
 dependencies = [
  "libc",
- "nix",
+ "nix 0.24.2",
 ]
 
 [[package]]
@@ -2155,7 +2169,7 @@ dependencies = [
  "http-types",
  "isahc",
  "kv-log-macro",
- "nix",
+ "nix 0.25.0",
  "opentelemetry",
  "opentelemetry-jaeger",
  "opentelemetry-semantic-conventions",
