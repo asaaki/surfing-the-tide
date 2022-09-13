@@ -1123,6 +1123,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "indexmap"
+version = "1.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
+dependencies = [
+ "autocfg",
+ "hashbrown",
+]
+
+[[package]]
 name = "infer"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1376,9 +1386,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.9.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
+checksum = "2f7254b99e31cad77da24b08ebf628882739a608578bb1bcdfc1f9c21260d7c0"
 
 [[package]]
 name = "opaque-debug"
@@ -1442,6 +1452,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69d6c3d7288a106c0a363e4b0e8d308058d56902adefb16f4936f417ffef086e"
+dependencies = [
+ "opentelemetry_api",
+ "opentelemetry_sdk",
+]
+
+[[package]]
 name = "opentelemetry-jaeger"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1450,7 +1470,7 @@ dependencies = [
  "async-std",
  "async-trait",
  "lazy_static",
- "opentelemetry",
+ "opentelemetry 0.17.0",
  "opentelemetry-semantic-conventions",
  "thiserror",
  "thrift",
@@ -1462,7 +1482,7 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9328977e479cebe12ce0d3fcecdaea4721d234895a9440c5b5dfd113f0594ac6"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.17.0",
  "prometheus",
  "protobuf",
 ]
@@ -1473,7 +1493,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "985cc35d832d412224b2cffe2f9194b1b89b6aa5d0bef76d080dce09d90e62bd"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.17.0",
 ]
 
 [[package]]
@@ -1485,7 +1505,7 @@ dependencies = [
  "http-types",
  "isahc",
  "kv-log-macro",
- "opentelemetry",
+ "opentelemetry 0.17.0",
  "opentelemetry-semantic-conventions",
  "surf",
  "url",
@@ -1499,12 +1519,46 @@ checksum = "d697e2e0304f0b716339a33492813ec8056b2285f6e172f3fde9e9486897d426"
 dependencies = [
  "http-types",
  "kv-log-macro",
- "opentelemetry",
+ "opentelemetry 0.17.0",
  "opentelemetry-prometheus",
  "opentelemetry-semantic-conventions",
  "prometheus",
  "tide",
  "url",
+]
+
+[[package]]
+name = "opentelemetry_api"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c24f96e21e7acc813c7a8394ee94978929db2bcc46cf6b5014fc612bf7760c22"
+dependencies = [
+ "futures-channel",
+ "futures-util",
+ "indexmap",
+ "js-sys",
+ "once_cell",
+ "pin-project-lite 0.2.8",
+ "thiserror",
+]
+
+[[package]]
+name = "opentelemetry_sdk"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ca41c4933371b61c2a2f214bf16931499af4ec90543604ec828f7a625c09113"
+dependencies = [
+ "async-std",
+ "async-trait",
+ "crossbeam-channel",
+ "futures-channel",
+ "futures-executor",
+ "futures-util",
+ "once_cell",
+ "opentelemetry_api",
+ "percent-encoding",
+ "rand 0.8.5",
+ "thiserror",
 ]
 
 [[package]]
@@ -2156,7 +2210,7 @@ dependencies = [
  "isahc",
  "kv-log-macro",
  "nix",
- "opentelemetry",
+ "opentelemetry 0.18.0",
  "opentelemetry-jaeger",
  "opentelemetry-semantic-conventions",
  "opentelemetry-surf",
