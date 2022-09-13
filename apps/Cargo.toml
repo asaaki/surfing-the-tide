@@ -27,7 +27,7 @@ isahc = { version = "0.9.14", default-features = false, features = ["http2"] }
 kv-log-macro = "1.0.7"
 opentelemetry = { version = "0.17.0", features = ["rt-async-std"] }
 opentelemetry-jaeger = { version = "0.16.0", features = ["rt-async-std"] }
-opentelemetry-semantic-conventions = "0.9.0"
+opentelemetry-semantic-conventions = "0.10.0"
 rand = "0.8.5"
 surf = { version = "2.3.2", features = ["curl-client"] }
 tide = "0.16.0"
